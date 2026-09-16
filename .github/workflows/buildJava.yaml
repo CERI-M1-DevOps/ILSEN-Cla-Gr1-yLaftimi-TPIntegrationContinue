@@ -3,7 +3,7 @@ on:
   pull_request : 
     branches : [main] # Ce workflow se déclenche lorsqu’on émet une pull request sur la branche main
 jobs:
-  name: 'test'
+  name: test
   runs-on: ubuntu-latest # OS où s'exécute le job
   steps:
     - name: placement #placement dans le dépôt courant
