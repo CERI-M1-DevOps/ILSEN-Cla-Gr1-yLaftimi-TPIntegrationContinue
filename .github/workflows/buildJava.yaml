@@ -1,8 +1,7 @@
 name: Java CI with Maven - Test and package
 on: [pull_request] # Ce workflow se déclenche lorsqu’on émet une pull request sur la branche main
 jobs:
-  Java CI with Maven - Test and package: # Nom du job : Java CI with Maven - Test and package
-  name: Java CI with Maven - Test and package
+  name: 'Java CI with Maven - Test and package'
   runs-on: ubuntu-latest # OS où s'exécute le job
   steps:
     - name: placement #placement dans le dépôt courant
