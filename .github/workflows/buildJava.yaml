@@ -23,5 +23,6 @@ jobs:
       - name : package #construction du package avec maven 
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run : mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$(echo ${{ github.repository }} | sed 's-/-_-')
+        # sur un push, la branche est envoyée sous le nom "branch-dev" pour être analysée comme branche longue durée (motif (branch|release)-.*)
+        run : mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$(echo ${{ github.repository }} | sed 's-/-_-') ${{ github.event_name == 'push' && '-Dsonar.branch.name=branch-dev' || '' }}
         
