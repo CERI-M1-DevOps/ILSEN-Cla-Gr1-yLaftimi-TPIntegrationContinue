@@ -1,6 +1,8 @@
 name: Java CI with Maven - Test and package
-on: 
-  pull_request : 
+on:
+  push :
+    branches : [dev] # Ce workflow se déclenche aussi à chaque push sur dev (analyse SonarCloud complète de la branche)
+  pull_request :
     branches : [main] # Ce workflow se déclenche lorsqu’on émet une pull request sur la branche main
 jobs:
   test : 
@@ -9,7 +11,9 @@ jobs:
     steps:
       - name: placement #placement dans le dépôt courant
         uses: actions/checkout@v4
-      
+        with:
+          fetch-depth: 0 # historique complet pour SonarCloud (détection du nouveau code)
+
       - name : setup 
         uses : actions/setup-java@v4 #installation de java 
         with: 
