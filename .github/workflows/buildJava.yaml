@@ -1,6 +1,8 @@
 name: Java CI with Maven - Test and package
-on: 
-  pull_request : 
+on:
+  push :
+    branches : [dev] # Ce workflow se déclenche aussi à chaque push sur dev (analyse SonarCloud complète de la branche)
+  pull_request :
     branches : [main] # Ce workflow se déclenche lorsqu’on émet une pull request sur la branche main
 jobs:
   test : 
@@ -9,12 +11,32 @@ jobs:
     steps:
       - name: placement #placement dans le dépôt courant
         uses: actions/checkout@v4
-      
+        with:
+          fetch-depth: 0 # historique complet pour SonarCloud (détection du nouveau code)
+
       - name : setup 
         uses : actions/setup-java@v4 #installation de java 
         with: 
           java-version : '21'
           distribution : 'corretto'
 
+      - name : cache sonar #mise en cache des packages SonarQube
+        uses : actions/cache@v4
+        with:
+          path : ~/.sonar/cache
+          key : ${{ runner.os }}-sonar
+          restore-keys : ${{ runner.os }}-sonar
+
+      - name : cache maven #mise en cache des dépendances maven (clé liée au contenu du pom.xml)
+        uses : actions/cache@v4
+        with:
+          path : ~/.m2/repository
+          key : ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys : ${{ runner.os }}-maven-
+
       - name : package #construction du package avec maven 
-        run : mvn -B package
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        # sur un push, la branche est envoyée sous le nom "branch-dev" pour être analysée comme branche longue durée (motif (branch|release)-.*)
+        run : mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$(echo ${{ github.repository }} | sed 's-/-_-') ${{ github.event_name == 'push' && '-Dsonar.branch.name=branch-dev' || '' }}
+        

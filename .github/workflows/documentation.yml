@@ -1,0 +1,37 @@
+name: Java documentation - Generate and deploy
+on:
+  pull_request :
+    types : [closed] # Ce workflow se déclenche à la fermeture d'une pull request...
+    branches : [main] # ...émise sur la branche main
+permissions:
+  contents: write # autorise le GITHUB_TOKEN à pousser sur la branche gh-pages
+jobs:
+  documentation :
+    name: documentation
+    if: github.event.pull_request.merged == true # uniquement si la pull request a été fusionnée (et non simplement fermée)
+    runs-on: ubuntu-latest # OS où s'exécute le job
+    steps:
+      - name: placement #placement dans le dépôt courant
+        uses: actions/checkout@v4
+
+      - name : setup
+        uses : actions/setup-java@v4 #installation de java
+        with:
+          java-version : '21'
+          distribution : 'corretto'
+
+      - name : cache maven #mise en cache des dépendances maven (clé liée au contenu du pom.xml)
+        uses : actions/cache@v4
+        with:
+          path : ~/.m2/repository
+          key : ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys : ${{ runner.os }}-maven-
+
+      - name : javadoc #génération de la documentation java
+        run : mvn -B javadoc:javadoc
+
+      - name : deploy #déploiement de la documentation sur la branche gh-pages
+        uses : peaceiris/actions-gh-pages@v4
+        with:
+          github_token : ${{ secrets.GITHUB_TOKEN }}
+          publish_dir : ./target/reports/apidocs
